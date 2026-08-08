@@ -120,8 +120,20 @@ source instead of working around it.
    `ops/hooks/directive.sh`'s own existing terminology), keeping its
    `idle, readiness, rollout, steady, incident` vocabulary completely
    unchanged — no methodology deleted, only the README label corrected
-   to match what the hooks already call it. Record this naming decision
-   in `docs/decisions/2026-08-09-loop-state-vs-status-split.md`.
+   to match what the hooks already call it. This is a documentation-only
+   fix, confirmed by survey: `error-budget-policy/hooks/error-budget-gate.sh:118`,
+   `readiness-checklist/hooks/readiness-fields-gate.sh`, and
+   `postmortem/hooks/postmortem-review-gate.sh:102,128` already parse
+   the field as `^status:\s*(\S+)` — none of the three gates, or any
+   other file, reference a literal `loop_state:` field on `ops/state.md`
+   anywhere in this repo, so no gate script needs editing for this fix
+   (confirmed via after-proposal warrant hunt, stance "write set cannot
+   carry this work" — the hunt's candidate finding, that the three gate
+   scripts hardcode `status:` and are outside the write set, turned out
+   to describe the current, correct, unedited state those gates are
+   already in, not a gap this proposal's write set needs to add). Record
+   this naming decision in
+   `docs/decisions/2026-08-09-loop-state-vs-status-split.md`.
 
 ## Out of scope
 - Implementing `on-the-record/hooks/role-spec-reference-guard.sh` or any
