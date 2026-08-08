@@ -69,8 +69,41 @@ Six plugins, each its own top-level directory (`hooks/` + `skills/`):
 
 ## Record vocabulary
 
-`loop_state`: `idle, readiness, rollout, steady, incident` (settled:
-`steady`/`idle`). Signal fields: `error_budget: ok|exhausted` (exhausted
+Two separate vocabularies live under this repo, on two different fields
+— kept apart per `docs/decisions/2026-08-09-loop-state-vs-status-split.md`
+(issue-44):
+
+- **`ops/state.md`'s operational field is `status`**: `idle, readiness,
+  rollout, steady, incident` (settled: `steady`/`idle`). This is the
+  release's rollout/incident state machine that
+  `readiness-checklist/hooks/readiness-fields-gate.sh`,
+  `error-budget-policy/hooks/error-budget-gate.sh`, and
+  `postmortem/hooks/postmortem-review-gate.sh` all key off of
+  (`^status:\s*(\S+)`), unchanged by issue-44 — only the label here was
+  corrected to match what those hooks already call it (it was previously
+  mislabeled `loop_state` in this section, which never matched the hooks'
+  own terminology).
+- **The record-frontmatter `loop_state`** (contract v3's per-role record
+  field, `docs/issue-<n>/reports/release-engineering.md`) follows
+  `roles/specs/release-engineering.spec.json`'s vocabulary: progress
+  `drafting, reviewing`; terminal `landed`; refusal
+  `version-undeclared`; error `changelog-unreachable`. Records opt into
+  this set by declaring `kind: ops-record` in frontmatter (this repo's
+  `role: release-engineering` is not itself a contract §2 role-to-kind
+  mapping, so the kind must be named explicitly); the terminal subset
+  (`landed, version-undeclared, changelog-unreachable`) is declared in
+  `docs/specs/record-fields-terminal-states.json`, consumed by core's
+  `record-fields-gate.sh`.
+
+Every phase-1 proposal and phase-2 record additionally carries the
+spec's three required fields: `description` (the existing scope/change
+description section, `proposal-norm/hooks/proposal-fields-gate.sh`),
+`change_type` (one of Added/Changed/Deprecated/Removed/Fixed/Security,
+same gate), and `version` (a reference into `CHANGELOG.md` — see
+`docs/handbooks/changelog.md`; `CHANGELOG.md` itself is not yet created,
+tracked as a follow-up, see `docs/decisions/2026-08-09-loop-state-vs-status-split.md`).
+
+Signal fields on `ops/state.md`: `error_budget: ok|exhausted` (exhausted
 refuses release steps), `postmortem:` (human-reviewed pointer),
 `## Checklist` rows `- item | status: yes|no | artifact: <pointer>`.
 Postmortems live at `docs/issue-<n>/reports/postmortems/<slug>.md`

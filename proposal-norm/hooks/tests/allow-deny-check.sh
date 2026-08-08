@@ -48,12 +48,28 @@ x
 named failure mode
 ## Rollback / back-out path
 git revert
-See https://example.com/evidence for this claim.'
+See https://example.com/evidence for this claim.
+change_type: Fixed'
 
-run "missing all four sections -> deny" 2 "docs/issue-999/proposals/x.md" "nothing here"
-run "missing risk section -> deny" 2 "docs/issue-999/proposals/x.md" "## Scope\nx\n## Rollback\ngit revert\nhttps://example.com"
+run "missing all five fields -> deny" 2 "docs/issue-999/proposals/x.md" "nothing here"
+run "missing risk section -> deny" 2 "docs/issue-999/proposals/x.md" "## Scope\nx\n## Rollback\ngit revert\nhttps://example.com\nchange_type: Fixed"
 run "complete proposal -> allow" 0 "docs/issue-999/proposals/x.md" "$full"
 run "non-proposal path -> allow (not this gate's business)" 0 "ops/state.md" "nothing here"
+run "missing change_type field -> deny" 2 "docs/issue-999/proposals/x.md" "## Scope / change description
+x
+## Risk
+named failure mode
+## Rollback / back-out path
+git revert
+See https://example.com/evidence for this claim."
+run "change_type value outside the six categories -> deny" 2 "docs/issue-999/proposals/x.md" "## Scope / change description
+x
+## Risk
+named failure mode
+## Rollback / back-out path
+git revert
+See https://example.com/evidence for this claim.
+change_type: Refactored"
 
 # --- Edit case: an Edit whose reconstructed content is complete -> allow;
 # still missing risk after the edit -> deny (issue-39 mandatory case).
@@ -63,9 +79,10 @@ printf '%s' '## Scope / change description
 x
 ## Rollback / back-out path
 git revert
-See https://example.com/evidence for this claim.' > "$td/docs/issue-999/proposals/x.md"
+See https://example.com/evidence for this claim.
+change_type: Fixed' > "$td/docs/issue-999/proposals/x.md"
 payload="$(python3 -c 'import json,sys; print(json.dumps({"tool_name":"Edit","tool_input":{"file_path":"docs/issue-999/proposals/x.md","old_string":"git revert","new_string":"git revert\n## Risk\nnamed failure mode"},"cwd":sys.argv[1]}))' "$td")"
-run_payload "Edit: adds Risk section, all four present -> allow" 0 "$payload" CLAUDE_PROJECT_DIR="$td"
+run_payload "Edit: adds Risk section, all five present -> allow" 0 "$payload" CLAUDE_PROJECT_DIR="$td"
 rm -rf "$td"
 
 td="$(mktemp -d)"
@@ -85,7 +102,8 @@ mkdir -p "$td/docs/issue-999/proposals"
 printf '%s' 'DRAFT DRAFT
 ## Rollback / back-out path
 git revert
-See https://example.com/evidence for this claim.' > "$td/docs/issue-999/proposals/x.md"
+See https://example.com/evidence for this claim.
+change_type: Fixed' > "$td/docs/issue-999/proposals/x.md"
 payload="$(python3 -c '
 import json, sys
 edits = [
@@ -93,7 +111,7 @@ edits = [
 ]
 print(json.dumps({"tool_name": "MultiEdit", "tool_input": {"file_path": "docs/issue-999/proposals/x.md", "edits": edits}, "cwd": sys.argv[1]}))
 ' "$td")"
-run_payload "MultiEdit: single replace fills scope+risk, all four present -> allow" 0 "$payload" CLAUDE_PROJECT_DIR="$td"
+run_payload "MultiEdit: single replace fills scope+risk, all five present -> allow" 0 "$payload" CLAUDE_PROJECT_DIR="$td"
 rm -rf "$td"
 
 td="$(mktemp -d)"

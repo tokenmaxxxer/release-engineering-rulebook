@@ -113,6 +113,8 @@ try:
     def has_any(*needles):
         return any(nd in low for nd in needles)
 
+    CHANGE_TYPES = ("added", "changed", "deprecated", "removed", "fixed", "security")
+
     missing = []
     if not has_any("scope", "change description"):
         missing.append("scope/change-description")
@@ -124,13 +126,23 @@ try:
             or re.search(r'`[a-z0-9_./-]+\.(md|sh)`', new_text)):
         missing.append("sourced-evidence-citation")
 
+    m_ct = re.search(r'change_type:\s*([A-Za-z]+)', new_text)
+    if not m_ct:
+        missing.append("change_type (one of Added/Changed/Deprecated/Removed/Fixed/Security)")
+    elif m_ct.group(1).strip().lower() not in CHANGE_TYPES:
+        missing.append(
+            "change_type value %r is not one of Added/Changed/Deprecated/Removed/Fixed/"
+            "Security" % m_ct.group(1)
+        )
+
     if missing:
         deny(
             "proposal is missing required RFC-shaped section(s): %s. Per docs/issue-27/"
-            "proposals/2026-07-31-rulebook-maturation.md (a), every release-engineering "
+            "proposals/2026-07-31-rulebook-maturation.md (a) and roles/specs/"
+            "release-engineering.spec.json (issue-44), every release-engineering "
             "proposal must state scope/change description, a named risk, a rollback/"
-            "back-out path, and cite at least one source (URL or repo path) for any "
-            "adopted-methodology claim." % ", ".join(missing)
+            "back-out path, cite at least one source (URL or repo path) for any "
+            "adopted-methodology claim, and declare change_type." % ", ".join(missing)
         )
 
     sys.exit(0)

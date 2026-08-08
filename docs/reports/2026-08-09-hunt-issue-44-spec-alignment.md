@@ -39,3 +39,37 @@ regex target changes, so no gate script belongs in the write set. Proposal
 text updated (`docs/issue-44/proposals/proposal.md` item 5) to state this
 explicitly, citing the three gates' current line numbers as evidence the
 fix is documentation-only. Finding closed, no write-set change needed.
+
+## before-landing — stance 1: assume this change and another plugin's rule cancel each other — find the pair
+
+Verdict: NO FINDING
+Seed: staged diff for issue-44 phase-2 (proposal-fields-gate.sh change_type requirement; README.md/record-fields-terminal-states.json split vocab; ops/hooks/directive.sh + proposal-norm/hooks/directive-fragment.txt text updates)
+cap_seconds: 180
+tier: default
+diff_stat_lines: 200 insertions(+), 14 deletions(-) across 9 files
+started_at: 2026-08-09T05:31:06+09:00
+ended_at: 2026-08-09T05:52:00+09:00
+
+Searched for a genuine two-plugin cancellation involving the new change_type
+requirement: compared proposal-fields-gate.sh's PROPOSAL_RE (docs/issue-<n>/
+proposals/*.md) against readiness-fields-gate.sh, rollout-plan-fields-gate.sh,
+error-budget-gate.sh, and postmortem-review-gate.sh -- none of those match
+proposal paths, they all key off ops/state.md or ops/rollout-plan.md, so
+there is no path overlap for a rule to compose against. Checked kill-switch
+env var names (PROPOSAL_FIELDS_GATE_OFF, READINESS_FIELDS_GATE_OFF,
+ROLLOUT_PLAN_FIELDS_GATE_OFF, ERROR_BUDGET_GATE_OFF,
+POSTMORTEM_REVIEW_GATE_OFF) for collisions -- all distinct, no shared switch
+that could turn two gates off together or let one silently permit what
+another refuses. Checked whether the new record-fields-terminal-states.json
+spec file's "ops-record" kind is consumed by any gate script -- it is
+referenced only from markdown text (README, the proposal, a decision
+record), not from any .sh hook, so it cannot collide with another gate's
+kind resolution.
+
+Along the way, reproduced a real defect (proposal-fields-gate.sh denies a
+trivial no-op Edit to the already-merged docs/issue-44/proposals/proposal.md,
+citing missing risk/rollback/change_type -- run with CLAUDE_PLUGIN_ROOT_CORE
+pointed at the cached core gate-lib, exit code 2), but this is the gate being
+inconsistent with its own past target, not two plugins' rules cancelling
+each other, so it does not fit this stance's required pair and is not
+reported as this stance's finding.
