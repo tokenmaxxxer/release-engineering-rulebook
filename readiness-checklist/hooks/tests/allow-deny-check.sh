@@ -8,6 +8,12 @@ here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
 gate="$here/../readiness-fields-gate.sh"
 fail=0
 
+# Resolve core per docs/specs/test-env-resolution.md before running any
+# fixture; SKIP (exit 75) rather than let every fixture FAIL misleadingly.
+. "$here/../../../tests/lib/resolve-core.sh"
+resolved_core="$(resolve_core "$here/../../../core")" || exit $?
+export CLAUDE_PLUGIN_ROOT_CORE="$resolved_core"
+
 run_payload() {
   local label="$1" expect="$2" payload="$3"; shift 3
   printf '%s' "$payload" | env "$@" bash "$gate" >/dev/null 2>&1
