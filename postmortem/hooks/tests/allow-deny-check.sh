@@ -10,6 +10,12 @@ here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
 gate="$here/../postmortem-review-gate.sh"
 fail=0
 
+# Resolve core per docs/specs/test-env-resolution.md before running any
+# fixture; SKIP (exit 75) rather than let every fixture FAIL misleadingly.
+. "$here/../../../tests/lib/resolve-core.sh"
+resolved_core="$(resolve_core "$here/../../../core")" || exit $?
+export CLAUDE_PLUGIN_ROOT_CORE="$resolved_core"
+
 run() {
   local label="$1" expect="$2" pm_content="$3" pm_path="$4"
   td="$(mktemp -d)"
