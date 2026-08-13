@@ -66,6 +66,10 @@ Six plugins, each its own top-level directory (`hooks/` + `skills/`):
                                                      the operator's-eye view for each
                                                      plugin's own gate
     tests/                                          repo-level checks (never installed)
+    playbook/                                       operational decision rules
+                                                     (condition -> choice -> source),
+                                                     one file per decision axis —
+                                                     issue #1174
 
 ## Record vocabulary
 
