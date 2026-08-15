@@ -1,6 +1,6 @@
 ---
 axis: deployment-rollout-strategy
-rule_count_floor: 12
+rule_count_floor: 13
 ---
 
 # Deployment rollout strategy
@@ -106,3 +106,15 @@ rule_count_floor: 12
     source: getunleash.io, "Canary vs. blue/green vs. rolling
     deployment: How to choose" —
     https://www.getunleash.io/blog/comparing-deployment-strategies-canary-blue-green-and-rolling
+
+13. **When** a release carries a config or environment-variable change
+    alongside the code change, **choose** to validate that config
+    against a schema and a secret-exposure scan before the rollout
+    starts, with stricter required fields for production than for
+    lower environments (e.g. HTTPS and encryption-at-rest required in
+    production, optional in dev) — a config typo or leaked credential
+    caught after traffic starts shifting is a second, avoidable
+    incident stacked on top of whatever the code change itself risks.
+    source: sre.google, "Release Engineering" (hermetic, verified
+    inputs as a release precondition) —
+    https://sre.google/sre-book/release-engineering/
